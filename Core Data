@@ -1,0 +1,108 @@
+//
+//  ViewController.m
+//  coreDataExample
+//
+//  Created by Nathanial Larson on 9/29/14.
+//  Copyright (c) 2014 Nathanial Larson. All rights reserved.
+//
+
+#import "ViewController.h"
+#import "Users.h"
+
+@import CoreData;
+
+@interface ViewController ()
+
+@property (nonatomic, strong) NSManagedObjectContext *context;
+@property (nonatomic, strong) NSManagedObjectModel *model;
+@property (nonatomic) NSMutableArray *allItems;
+
+@end
+
+@implementation ViewController
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    // Do any additional setup after loading the view, typically from a nib.
+    
+    _model = [NSManagedObjectModel mergedModelFromBundles:nil];
+    
+    NSPersistentStoreCoordinator *psc = [[NSPersistentStoreCoordinator alloc] initWithManagedObjectModel:_model];
+    
+    NSString *path = self.itemDBPath;
+    NSURL *dbURL = [NSURL fileURLWithPath:path];
+    
+    NSError *error = nil;
+    
+    if (![psc addPersistentStoreWithType:NSSQLiteStoreType configuration:nil URL:dbURL options:nil error:&error]){
+        
+        @throw [NSException exceptionWithName:@"Open Failure" reason:[error localizedDescription] userInfo:nil];
+        
+    }
+    
+    _context = [[NSManagedObjectContext alloc] init];
+    _context.persistentStoreCoordinator = psc;
+    
+    
+    
+    
+}
+
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+- (NSString *)itemDBPath
+{
+    NSArray *documentDirectries = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    
+    NSString *documentDirectory = [documentDirectries firstObject];
+    
+    return [documentDirectory stringByAppendingPathComponent:@"Users.data"];
+}
+
+- (IBAction)requestData:(id)sender {
+    
+    NSFetchRequest *request = [[NSFetchRequest alloc] init];
+    [request setReturnsObjectsAsFaults:NO];
+    NSEntityDescription *e = [NSEntityDescription entityForName:@"Users" inManagedObjectContext:self.context];
+    
+    request.entity = e;
+    
+    NSError *error;
+    
+    NSArray *result = [self.context executeFetchRequest:request error:&error];
+    
+    self.allItems = [[NSMutableArray alloc] initWithArray:result];
+    
+    for (int i = 0; i < [self.allItems count]; i++) {
+        NSLog(@"%@",self.allItems[i]);
+    }
+    
+}
+
+- (IBAction)filterData:(id)sender {
+    
+    
+    NSPredicate *p = [NSPredicate predicateWithFormat:@"(firstName = 'aa')"];
+    
+    NSArray *filtered = [_allItems filteredArrayUsingPredicate:p];
+    
+    NSLog(@"%@",filtered);
+    
+}
+- (IBAction)saveData:(id)sender {
+    
+    Users *newUser = [NSEntityDescription insertNewObjectForEntityForName:@"Users" inManagedObjectContext:self.context];
+    
+    newUser.firstName = self.inputText.text;
+    newUser.lastName = @"TestLast";
+    newUser.emailAddress = @"bogusBob";
+    
+    NSError *error;
+    
+    [self.context save:&error];
+    
+}
+@end
