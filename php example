@@ -1,0 +1,45 @@
+<?php 
+
+// This is the connection string. 
+
+$con=mysqli_connect("localhost",$db_username,$db_password,$db_name);
+
+		// Check connection
+if (mysqli_connect_errno())
+  {
+  echo "Failed to connect to MySQL: " . mysqli_connect_error();
+  }
+   
+   $currentAppUpdateNumber = $_POST["currentAppUpdateNumber"]; // This value is sent from the app to this page and stored in the variable.
+   
+   
+   // This is a Query.
+   
+   $resulti = mysqli_query($con,"SELECT * FROM Table_Update
+WHERE id=1");
+$update = 0;
+
+// Put the results of the query into a variable.
+
+while($row = mysqli_fetch_array($resulti))
+  {
+  $update = $row['update_number'];
+  }
+  
+  $makeChange = strcmp($currentAppUpdateNumber,$update);
+   
+   $result = mysqli_query($con,"SELECT MAX(id) FROM products");
+    $rowi = mysqli_fetch_array($result);
+    $highest_id = $rowi[0];
+    
+$maxVal = $highest_id;
+
+// outputs results back to the app to be used within it.
+
+   if($makeChange == 0){
+   		echo "YES";
+   }else{
+   		echo $update . " " . $maxVal;
+   }
+   
+?>
