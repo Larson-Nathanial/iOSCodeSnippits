@@ -1,0 +1,30 @@
+for (_i = 0; _i < _myInt; _i++) {
+            NSString *fullURL = @"http://admin.wordsofwitandwisdom.com/images/";
+            NSMutableArray *element = [myArray objectAtIndex:_i];
+            NSString *pictureID = [element valueForKey:@"id"];
+            pictureID = [pictureID stringByAppendingString:@".jpg"];
+            fullURL = [fullURL stringByAppendingString:pictureID];
+            
+            UIImage *image = [[UIImage alloc] initWithData:[NSData dataWithContentsOfURL:[NSURL URLWithString:fullURL]]];
+            
+            NSString *docDir = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0];
+            
+            NSString *jpegFilePath = [NSString stringWithFormat:@"%@/%@",docDir,pictureID];
+            
+            
+            
+            NSData *data2 = [NSData dataWithData:UIImageJPEGRepresentation(image, 0.5)];
+            
+            
+            if ([data2 writeToFile:jpegFilePath atomically:YES]) {
+                
+                // the Image is saved to the phone
+                
+                // NSURL representing the image that is now saved on the phone
+                NSURL *imageOnPhone = [NSURL fileURLWithPath:jpegFilePath isDirectory:YES];
+                
+                // Exclude this image, which is now stored on the phone, from iCloud Backup
+                NSError *err = nil;
+                
+        [imageOnPhone setResourceValue:[NSNumber numberWithBool:YES] forKey:NSURLIsExcludedFromBackupKey error:&err];
+            }
